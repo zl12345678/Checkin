@@ -1,9 +1,36 @@
+<script setup lang="ts">
+function showVoiceNotice() {
+  uni.showModal({
+    title: '语音签到',
+    content: '语音识别正在接入中。现在可以先用“选择名字”完成顾客管理和后续签到流程。',
+    confirmText: '去选名字',
+    cancelText: '知道了',
+    success(result) {
+      if (result.confirm) {
+        uni.switchTab({ url: '/pages/customers/index' });
+      }
+    }
+  });
+}
+
+function openCustomerPicker() {
+  uni.switchTab({ url: '/pages/customers/index' });
+}
+
+function showHandwritingNotice() {
+  uni.showToast({
+    title: '手写输入稍后接入',
+    icon: 'none'
+  });
+}
+</script>
+
 <template>
   <view class="page">
-    <button class="voice-button" type="button">语音签到</button>
+    <button class="voice-button" type="button" @click="showVoiceNotice">语音签到</button>
     <view class="quick-actions">
-      <button type="button">选择名字</button>
-      <button type="button">手写名字</button>
+      <button type="button" @click="openCustomerPicker">选择名字</button>
+      <button type="button" @click="showHandwritingNotice">手写名字</button>
     </view>
     <view class="section">
       <text class="section-title">今日签到</text>

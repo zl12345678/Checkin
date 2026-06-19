@@ -21,13 +21,14 @@
   },
   "devDependencies": {
     "@dcloudio/types": "3.4.28",
+    "@dcloudio/uni-app-plus": "3.0.0-5000720260410001",
     "@dcloudio/vite-plugin-uni": "3.0.0-5000720260410001",
     "@types/node": "^20.14.0",
     "@vitejs/plugin-vue": "^5.0.0",
+    "sass": "^1.77.0",
     "typescript": "^5.4.0",
     "vite": "^5.0.0",
     "vitest": "^1.6.0",
-    "vue-tsc": "^2.0.0",
-    "sass": "^1.77.0"
+    "vue-tsc": "^2.0.0"
   }
 }

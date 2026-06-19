@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import type { Customer } from '@/types/domain';
+import { addCustomer as saveCustomer, createAppDataStore, createCheckin, deactivateCustomer, hasCheckinOnDay } from '@/services/appData';
 
-const STORAGE_KEY = 'checkin.customers';
-
+const store = createAppDataStore();
 const customers = ref<Customer[]>([]);
 const isAdding = ref(false);
 const form = reactive({
@@ -11,16 +12,23 @@ const form = reactive({
   phoneLast4: '',
   note: ''
 });
+const searchText = ref('');
 
-const activeCustomers = computed(() => customers.value.filter((customer) => customer.status === 'active'));
+const activeCustomers = computed(() => {
+  const keyword = searchText.value.trim();
+  return customers.value
+    .filter((customer) => customer.status === 'active')
+    .filter((customer) => {
+      if (!keyword) {
+        return true;
+      }
+      return customer.name.includes(keyword) || customer.phoneLast4?.includes(keyword) || customer.note?.includes(keyword);
+    })
+    .sort((left, right) => (right.lastCheckinAt ?? '').localeCompare(left.lastCheckinAt ?? ''));
+});
 
 function loadCustomers() {
-  const saved = uni.getStorageSync(STORAGE_KEY);
-  customers.value = Array.isArray(saved) ? saved : [];
-}
-
-function saveCustomers() {
-  uni.setStorageSync(STORAGE_KEY, customers.value);
+  customers.value = store.load().customers;
 }
 
 function resetForm() {
@@ -52,27 +60,66 @@ function addCustomer() {
     return;
   }
 
-  customers.value.unshift({
-    id: `c-${Date.now()}`,
+  saveCustomer(store, {
     name,
     phoneLast4: phoneLast4 || undefined,
-    note: form.note.trim() || undefined,
-    status: 'active',
-    createdAt: new Date().toISOString()
+    note: form.note.trim() || undefined
   });
-  saveCustomers();
+  loadCustomers();
   resetForm();
   isAdding.value = false;
   uni.showToast({ title: '已新增顾客', icon: 'success' });
 }
 
-onMounted(loadCustomers);
+function createCustomerCheckin(customer: Customer, allowDuplicate = false) {
+  const now = new Date().toISOString();
+  const state = store.load();
+  const today = now.slice(0, 10);
+
+  if (!allowDuplicate && hasCheckinOnDay(state, customer.id, today)) {
+    uni.showModal({
+      title: '今天已签到',
+      content: `${customer.name} 今天已经签到过，是否再记一次？`,
+      confirmText: '再记一次',
+      cancelText: '取消',
+      success(result) {
+        if (result.confirm) {
+          createCustomerCheckin(customer, true);
+        }
+      }
+    });
+    return;
+  }
+
+  createCheckin(store, customer.id, 'picker', now);
+  loadCustomers();
+  uni.showToast({ title: '签到成功', icon: 'success' });
+}
+
+function confirmDeactivate(customer: Customer) {
+  uni.showModal({
+    title: '停用顾客',
+    content: `停用 ${customer.name} 后不会出现在常用名单，历史签到仍会保留。`,
+    confirmText: '停用',
+    cancelText: '取消',
+    success(result) {
+      if (result.confirm) {
+        deactivateCustomer(store, customer.id);
+        loadCustomers();
+        uni.showToast({ title: '已停用', icon: 'success' });
+      }
+    }
+  });
+}
+
+onShow(loadCustomers);
 </script>
 
 <template>
   <view class="page">
     <text class="title">顾客</text>
     <button v-if="!isAdding" type="button" @click="showAddForm">新增顾客</button>
+    <input v-model="searchText" class="field" placeholder="搜索姓名、尾号或备注" />
 
     <view v-if="isAdding" class="form">
       <input v-model="form.name" class="field" placeholder="姓名（必填）" />
@@ -86,13 +133,20 @@ onMounted(loadCustomers);
 
     <view v-if="activeCustomers.length" class="customer-list">
       <view v-for="customer in activeCustomers" :key="customer.id" class="customer-row">
-        <text class="customer-name">{{ customer.name }}</text>
-        <text class="customer-meta">{{ customer.phoneLast4 ? `尾号 ${customer.phoneLast4}` : '未填手机号' }}</text>
-        <text v-if="customer.note" class="customer-meta">{{ customer.note }}</text>
+        <view class="customer-info">
+          <text class="customer-name">{{ customer.name }}</text>
+          <text class="customer-meta">{{ customer.phoneLast4 ? `尾号 ${customer.phoneLast4}` : '未填手机号' }}</text>
+          <text v-if="customer.note" class="customer-meta">{{ customer.note }}</text>
+          <text v-if="customer.lastCheckinAt" class="customer-meta">最近签到 {{ customer.lastCheckinAt.slice(0, 10) }}</text>
+        </view>
+        <view class="row-actions">
+          <button class="checkin-button" type="button" @click="createCustomerCheckin(customer)">签到</button>
+          <button class="deactivate-button" type="button" @click="confirmDeactivate(customer)">停用</button>
+        </view>
       </view>
     </view>
 
-    <text v-else class="empty">还没有顾客</text>
+    <text v-else class="empty">{{ customers.length ? '没有找到匹配顾客' : '还没有顾客' }}</text>
   </view>
 </template>
 
@@ -137,6 +191,10 @@ button {
   color: #fff;
 }
 .customer-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
   padding: var(--space-4);
   border-radius: var(--radius);
   background: var(--color-surface);
@@ -150,5 +208,36 @@ button {
   display: block;
   margin-top: var(--space-2);
   color: var(--color-muted);
+}
+.checkin-button {
+  min-width: 96px;
+  padding: 0 var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+}
+.row-actions {
+  display: grid;
+  gap: var(--space-2);
+}
+.deactivate-button {
+  min-width: 96px;
+  padding: 0 var(--space-4);
+  color: var(--color-danger);
+  background: #fff1f0;
+}
+
+@media (max-width: 420px) {
+  .customer-row {
+    grid-template-columns: 1fr;
+  }
+  .checkin-button {
+    width: 100%;
+  }
+  .row-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .deactivate-button {
+    width: 100%;
+  }
 }
 </style>

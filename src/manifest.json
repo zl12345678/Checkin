@@ -1,0 +1,20 @@
+{
+  "name": "Checkin",
+  "appid": "__UNI__CHECKIN",
+  "description": "单店顾客签到、排行和奖励管理",
+  "versionName": "0.1.0",
+  "versionCode": 1,
+  "app-plus": {
+    "modules": {
+      "Speech": {},
+      "SQLite": {}
+    },
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.RECORD_AUDIO\"/>"
+        ]
+      }
+    }
+  }
+}

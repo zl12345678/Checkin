@@ -1,0 +1,21 @@
+{
+  "pages": [
+    { "path": "pages/checkin/index", "style": { "navigationBarTitleText": "顾客签到" } },
+    { "path": "pages/customers/index", "style": { "navigationBarTitleText": "顾客" } },
+    { "path": "pages/ranking/index", "style": { "navigationBarTitleText": "排行榜" } },
+    { "path": "pages/rewards/index", "style": { "navigationBarTitleText": "奖励" } },
+    { "path": "pages/settings/index", "style": { "navigationBarTitleText": "设置" } }
+  ],
+  "tabBar": {
+    "color": "#5f6368",
+    "selectedColor": "#0f766e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/checkin/index", "text": "签到" },
+      { "pagePath": "pages/customers/index", "text": "顾客" },
+      { "pagePath": "pages/ranking/index", "text": "排行" },
+      { "pagePath": "pages/rewards/index", "text": "奖励" }
+    ]
+  }
+}

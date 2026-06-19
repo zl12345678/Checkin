@@ -1,0 +1,28 @@
+:root {
+  --color-bg: #f7f7f4;
+  --color-surface: #ffffff;
+  --color-text: #1f2933;
+  --color-muted: #667085;
+  --color-primary: #0f766e;
+  --color-danger: #b42318;
+  --radius: 8px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --font-body: 18px;
+  --font-title: 24px;
+  --font-xl: 32px;
+  --touch-min: 56px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+page {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--font-body);
+}

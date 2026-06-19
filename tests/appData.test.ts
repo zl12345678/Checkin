@@ -3,6 +3,7 @@ import {
   addCustomer,
   createAppDataStore,
   createCheckin,
+  createEmptyAppDataState,
   createMemoryStorageAdapter,
   deactivateCustomer,
   deactivateRewardRule,
@@ -69,5 +70,19 @@ describe('app data store', () => {
 
     expect(store.load().rewardRules[0].active).toBe(false);
     expect(store.load().rewardClaims).toHaveLength(1);
+  });
+
+  it('returns an empty state when storage load fails', () => {
+    const store = createAppDataStore({
+      getItem() {
+        throw new Error('storage bridge not ready');
+      },
+      setItem() {
+        throw new Error('storage bridge not ready');
+      }
+    });
+
+    expect(store.load()).toEqual(createEmptyAppDataState());
+    expect(() => store.save(createEmptyAppDataState())).not.toThrow();
   });
 });

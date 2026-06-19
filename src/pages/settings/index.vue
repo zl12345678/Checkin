@@ -2,11 +2,11 @@
 import { computed, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import type { AppDataState } from '@/services/appData';
-import { createAppDataStore, markBackupComplete } from '@/services/appData';
+import { createAppDataStore, createEmptyAppDataState, markBackupComplete } from '@/services/appData';
 import { createBackupSnapshot } from '@/services/backup';
 
 const store = createAppDataStore();
-const state = ref<AppDataState>(store.load());
+const state = ref<AppDataState>(createEmptyAppDataState());
 const exportText = ref('');
 
 const backupLabel = computed(() => {

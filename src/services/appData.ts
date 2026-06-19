@@ -26,7 +26,7 @@ export interface CreateCustomerInput {
 
 const STORAGE_KEY = 'checkin.appData.v1';
 
-const emptyState = (): AppDataState => ({
+export const createEmptyAppDataState = (): AppDataState => ({
   customers: [],
   checkins: [],
   rewardRules: [],
@@ -34,7 +34,7 @@ const emptyState = (): AppDataState => ({
 });
 
 function normalizeState(value: unknown): AppDataState {
-  const fallback = emptyState();
+  const fallback = createEmptyAppDataState();
   if (!value || typeof value !== 'object') {
     return fallback;
   }
@@ -60,9 +60,15 @@ function nextId(items: Array<{ id: string }>, prefix: string): string {
 export function createUniStorageAdapter(): StorageAdapter {
   return {
     getItem(key: string): unknown {
+      if (typeof uni === 'undefined' || typeof uni.getStorageSync !== 'function') {
+        return undefined;
+      }
       return uni.getStorageSync(key);
     },
     setItem(key: string, value: unknown): void {
+      if (typeof uni === 'undefined' || typeof uni.setStorageSync !== 'function') {
+        return;
+      }
       uni.setStorageSync(key, value);
     }
   };
@@ -87,10 +93,18 @@ export function createMemoryStorageAdapter(seed?: AppDataState): StorageAdapter 
 export function createAppDataStore(adapter: StorageAdapter = createUniStorageAdapter()): AppDataStore {
   return {
     load(): AppDataState {
-      return normalizeState(adapter.getItem(STORAGE_KEY));
+      try {
+        return normalizeState(adapter.getItem(STORAGE_KEY));
+      } catch (error) {
+        return createEmptyAppDataState();
+      }
     },
     save(state: AppDataState): void {
-      adapter.setItem(STORAGE_KEY, state);
+      try {
+        adapter.setItem(STORAGE_KEY, state);
+      } catch (error) {
+        return;
+      }
     }
   };
 }

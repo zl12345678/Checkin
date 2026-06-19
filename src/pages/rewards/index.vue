@@ -2,13 +2,13 @@
 import { computed, reactive, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import type { AppDataState } from '@/services/appData';
-import { createAppDataStore, deactivateRewardRule, markRewardClaimed, revertRewardClaim, saveRewardRule } from '@/services/appData';
+import { createAppDataStore, createEmptyAppDataState, deactivateRewardRule, markRewardClaimed, revertRewardClaim, saveRewardRule } from '@/services/appData';
 import { calculateRanking } from '@/services/ranking';
 import { calculateRewardEligibility } from '@/services/rewards';
 import { getMonthRange } from '@/utils/dateRange';
 
 const store = createAppDataStore();
-const state = ref<AppDataState>(store.load());
+const state = ref<AppDataState>(createEmptyAppDataState());
 const range = computed(() => getMonthRange(new Date()));
 const showCountForm = ref(false);
 const showRankForm = ref(false);

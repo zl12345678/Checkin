@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import type { AppDataState } from '@/services/appData';
-import { createAppDataStore } from '@/services/appData';
+import { createAppDataStore, createEmptyAppDataState } from '@/services/appData';
 import { calculateRanking } from '@/services/ranking';
 import { calculateRewardEligibility } from '@/services/rewards';
 import { getMonthRange, getPreviousMonthRange } from '@/utils/dateRange';
@@ -10,7 +10,7 @@ import { getMonthRange, getPreviousMonthRange } from '@/utils/dateRange';
 type RangeMode = 'current' | 'previous';
 
 const store = createAppDataStore();
-const state = ref<AppDataState>(store.load());
+const state = ref<AppDataState>(createEmptyAppDataState());
 const mode = ref<RangeMode>('current');
 
 const range = computed(() => {

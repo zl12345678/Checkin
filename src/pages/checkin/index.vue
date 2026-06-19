@@ -3,11 +3,11 @@ import { computed, reactive, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import type { Customer } from '@/types/domain';
 import type { AppDataState } from '@/services/appData';
-import { addCustomer, createAppDataStore, createCheckin, getTodayCheckins, hasCheckinOnDay, reverseCheckin } from '@/services/appData';
+import { addCustomer, createAppDataStore, createCheckin, createEmptyAppDataState, getTodayCheckins, hasCheckinOnDay, reverseCheckin } from '@/services/appData';
 import { matchCustomers, normalizeName } from '@/services/customerMatch';
 
 const store = createAppDataStore();
-const state = ref<AppDataState>(store.load());
+const state = ref<AppDataState>(createEmptyAppDataState());
 const isInputting = ref(false);
 const inputMode = ref<'voice' | 'handwriting'>('voice');
 const matchedCustomers = ref<Customer[]>([]);

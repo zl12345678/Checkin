@@ -2,10 +2,17 @@
 import { computed, reactive, ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import type { Customer } from '@/types/domain';
-import { addCustomer as saveCustomer, createAppDataStore, createCheckin, deactivateCustomer, hasCheckinOnDay } from '@/services/appData';
+import {
+  addCustomer as saveCustomer,
+  createAppDataStore,
+  createCheckin,
+  createEmptyAppDataState,
+  deactivateCustomer,
+  hasCheckinOnDay
+} from '@/services/appData';
 
 const store = createAppDataStore();
-const customers = ref<Customer[]>([]);
+const customers = ref<Customer[]>(createEmptyAppDataState().customers);
 const isAdding = ref(false);
 const form = reactive({
   name: '',
